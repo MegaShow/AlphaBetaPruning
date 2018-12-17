@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Chinese Chess</title>
+</head>
+
+<body>
+  <script src="wasm_exec.js"></script>
+  <script type="text/javascript" src="jquery/jquery.js"></script>
+  <script type="text/javascript" src="vschess/vschess.min.js"></script>
+  <script>
+    if (!WebAssembly.instantiateStreaming) { // polyfill
+      WebAssembly.instantiateStreaming = async (resp, importObject) => {
+        const source = await (await resp).arrayBuffer();
+        return await WebAssembly.instantiate(source, importObject);
+      };
+    }
+
+    const go = new Go();
+    let mod, inst, chess;
+
+    WebAssembly.instantiateStreaming(fetch("index.wasm"), go.importObject).then(async (result) => {
+      mod = result.module;
+      inst = result.instance;
+      chess = new vschess.load(".vschess", {
+        clickResponse: vschess.code.clickResponse.red,
+        afterClickAnimate: function () {
+          var moveList = this.getMoveList();
+          var lastMove = moveList[moveList.length - 1];
+          var lastEat = 0;
+          for (var i = chess.eatStatus.length - 1; i >= 0; --i) {
+            if (chess.eatStatus[i]) {
+              lastEat = i;
+              break;
+            }
+          }
+          var lastEatFen = chess.getFenList()[lastEat];
+          var eatAfterMove = moveList.slice(lastEat + 1);
+          getAlphaBetaMove();
+          wait(lastEatFen, eatAfterMove);
+        }
+      })
+      await go.run(inst);
+      inst = await WebAssembly.instantiate(mod, go.importObject); // reset instance
+    });
+
+    async function wait(fen, list) {
+      $.ajax({
+        url: "https://www.xiaxiangqi.com/api/cloud/bestmove",
+        data: { fen: fen, move: list.join(" ") },
+        type: "post",
+        success: function (response) {
+          if (response.code === 0) {
+            chess.movePieceByNode(response.data.best, 200);
+          }
+          else if (response.code === 1001 || response.code === 1002) {
+            setTimeout(function () { wait(fen, list); }, 1000);
+          }
+        }
+      });
+    }
+  </script>
+
+  <div class="vschess"></div>
+</body>
+
+</html>
