@@ -13,53 +13,54 @@
   <script>
     if (!WebAssembly.instantiateStreaming) { // polyfill
       WebAssembly.instantiateStreaming = async (resp, importObject) => {
-        const source = await (await resp).arrayBuffer();
-        return await WebAssembly.instantiate(source, importObject);
-      };
+        const source = await (await resp).arrayBuffer()
+        return await WebAssembly.instantiate(source, importObject)
+      }
     }
 
-    const go = new Go();
-    let mod, inst, chess;
+    const go = new Go()
+    let mod, inst, chess
 
     WebAssembly.instantiateStreaming(fetch("index.wasm"), go.importObject).then(async (result) => {
-      mod = result.module;
-      inst = result.instance;
+      mod = result.module
+      inst = result.instance
       chess = new vschess.load(".vschess", {
         clickResponse: vschess.code.clickResponse.red,
         afterClickAnimate: function () {
-          var moveList = this.getMoveList();
-          var lastMove = moveList[moveList.length - 1];
-          var lastEat = 0;
-          for (var i = chess.eatStatus.length - 1; i >= 0; --i) {
+          let moveList = this.getMoveList()
+          let lastMove = moveList[moveList.length - 1]
+          let lastEat = 0
+          for (let i = chess.eatStatus.length - 1; i >= 0; --i) {
             if (chess.eatStatus[i]) {
-              lastEat = i;
-              break;
+              lastEat = i
+              break
             }
           }
-          var lastEatFen = chess.getFenList()[lastEat];
-          var eatAfterMove = moveList.slice(lastEat + 1);
-          getAlphaBetaMove();
-          wait(lastEatFen, eatAfterMove);
+          let lastEatFen = chess.getFenList()[lastEat]
+          let eatAfterMove = moveList.slice(lastEat + 1)
+          // getAlphaBetaMove(lastEatFen, eatAfterMove)
+          wait(lastEatFen, eatAfterMove)
         }
       })
-      await go.run(inst);
-      inst = await WebAssembly.instantiate(mod, go.importObject); // reset instance
+      await go.run(inst)
+      inst = await WebAssembly.instantiate(mod, go.importObject) // reset instance
     });
+
+    async function move(step) {
+      chess.movePieceByNode(step, 75)
+    }
 
     async function wait(fen, list) {
       $.ajax({
-        url: "https://www.xiaxiangqi.com/api/cloud/bestmove",
-        data: { fen: fen, move: list.join(" ") },
-        type: "post",
+        // url: "https://www.xiaxiangqi.com/api/cloud/bestmove",
+        url: '/best',
+        data: { fen: fen, move: list.join(",") },
+        type: 'post',
         success: function (response) {
-          if (response.code === 0) {
-            chess.movePieceByNode(response.data.best, 200);
-          }
-          else if (response.code === 1001 || response.code === 1002) {
-            setTimeout(function () { wait(fen, list); }, 1000);
-          }
+          console.log(response)
+          move(response)
         }
-      });
+      })
     }
   </script>
 
