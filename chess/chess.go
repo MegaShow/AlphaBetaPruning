@@ -1,6 +1,7 @@
 package chess
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 )
@@ -53,6 +54,20 @@ func (c *Chess) GetPiecesSize() int {
 	return len(c.Board)
 }
 
+func (c *Chess) Print() {
+	for n := 9; n >= 0; n-- {
+		for a := 0; a <= 8; a++ {
+			p, ok := c.Board[n*9+a]
+			if ok {
+				fmt.Print(string(p.Type))
+			} else {
+				fmt.Print("-")
+			}
+		}
+		fmt.Println()
+	}
+}
+
 func (c *Chess) IsWin(player byte) bool {
 	return false
 }
@@ -78,11 +93,11 @@ func (c *Chess) Evaluate(steps [][4]int) int {
 	redValue = redBasicValue + redPositionValue*8
 	blackValue = blackBasicValue + blackPositionValue*8
 	// fmt.Println(redValue, blackValue, redBasicValue, redPositionValue, blackBasicValue, blackPositionValue)
-	if c.Next == 'b' {
-		return blackValue - redValue
-	} else {
-		return redValue - blackValue
-	}
+	//if c.Next == 'b' {
+	return blackValue - redValue
+	//} else {
+	//	return redValue - blackValue
+	//}
 }
 
 // 子力价值

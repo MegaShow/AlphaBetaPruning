@@ -1,6 +1,9 @@
 package chess
 
-import "unicode"
+import (
+	"fmt"
+	"unicode"
+)
 
 func (c *Chess) Move(step [4]int) (state [2]Piece) {
 	oldPiece := c.Board[step[0]*9+step[1]]
@@ -53,6 +56,9 @@ func (c *Chess) GetNextSteps() (steps [][4]int) {
 	for _, p := range c.Board {
 		if (c.Next == 'b' && unicode.IsUpper(rune(p.Type))) || (c.Next != 'b' && unicode.IsLower(rune(p.Type))) {
 			continue
+		}
+		if unicode.IsUpper(rune(p.Type)) {
+			fmt.Println(string(p.Type))
 		}
 		switch unicode.ToLower(rune(p.Type)) {
 		case 'k': // 将、帅
@@ -169,7 +175,7 @@ func (c *Chess) GetNextSteps() (steps [][4]int) {
 					break
 				}
 			}
-			for i--; p.AlphaIndex+i >= 'a'-'a'; i++ {
+			for i--; p.AlphaIndex+i >= 'a'-'a'; i-- {
 				if _, ok := c.Board[p.NumberIndex*9+p.AlphaIndex+i]; ok {
 					checkStepAndSet(c, &steps, &p, p.NumberIndex, p.AlphaIndex+i)
 					break
