@@ -33,7 +33,7 @@
       })
       await go.run(inst)
       inst = await WebAssembly.instantiate(mod, go.importObject) // reset instance
-    });
+    })
 
     async function move(step) {
       console.log('Move with step', step)

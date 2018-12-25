@@ -16,7 +16,7 @@ test/result/*.json
 .idea/
 
 # wasm
-public/*.wasm
+!public/index.wasm
 
 # vschess
 public/jquery/*

@@ -81,11 +81,10 @@ func (c *Chess) IsWin(player byte) bool {
 	}
 }
 
-func (c *Chess) Evaluate(steps [][4]int) int {
+func (c *Chess) Evaluate() int {
 	var redValue, blackValue int
 	var redBasicValue, blackBasicValue int
 	var redPositionValue, blackPositionValue int
-	//var redMobilityValue, blackMobilityValue int
 	for _, p := range c.Board {
 		positions, ok := PositionValueTable[byte(unicode.ToLower(rune(p.Type)))]
 		if p.Type >= 'a' && p.Type <= 'z' {
@@ -100,14 +99,6 @@ func (c *Chess) Evaluate(steps [][4]int) int {
 			}
 		}
 	}
-	//for _, s := range steps {
-	//	p := c.Board[s[0]*9+s[1]]
-	//	if p.Type >= 'a' && p.Type <= 'z' {
-	//		blackMobilityValue += MobilityValueTable[p.Type]
-	//	} else {
-	//		redMobilityValue += MobilityValueTable[p.Type]
-	//	}
-	//}
 	redValue = redBasicValue + redPositionValue*8
 	blackValue = blackBasicValue + blackPositionValue*8
 	return blackValue - redValue
