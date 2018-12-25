@@ -27,19 +27,8 @@
       chess = new vschess.load(".vschess", {
         clickResponse: vschess.code.clickResponse.red,
         afterClickAnimate: function () {
-          let moveList = this.getMoveList()
-          let lastMove = moveList[moveList.length - 1]
-          let lastEat = 0
-          for (let i = chess.eatStatus.length - 1; i >= 0; --i) {
-            if (chess.eatStatus[i]) {
-              lastEat = i
-              break
-            }
-          }
-          let lastEatFen = chess.getFenList()[lastEat]
-          let eatAfterMove = moveList.slice(lastEat + 1)
-          // getAlphaBetaMove(lastEatFen, eatAfterMove)
-          wait(lastEatFen, eatAfterMove)
+          // getAlphaBetaMoveByWasm(this.getCurrentFen())
+          getAlphaBetaMoveByApi(this.getCurrentFen())
         }
       })
       await go.run(inst)
@@ -47,24 +36,23 @@
     });
 
     async function move(step) {
+      console.log('Move with step', step)
       chess.movePieceByNode(step, 75)
     }
 
-    async function wait(fen, list) {
+    async function getAlphaBetaMoveByApi(fen) {
       $.ajax({
-        // url: "https://www.xiaxiangqi.com/api/cloud/bestmove",
         url: '/best',
-        data: { fen: fen, move: list.join(",") },
+        data: { fen: fen },
         type: 'post',
         success: function (response) {
-          console.log(response)
           move(response)
         }
       })
     }
   </script>
 
-  <div class="vschess"></div>
+  <div style="text-align: center; margin: auto" class="vschess"></div>
 </body>
 
 </html>

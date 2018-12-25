@@ -19,5 +19,11 @@ test/result/*.json
 public/*.wasm
 
 # vschess
-public/jquery
-public/vschess
+public/jquery/*
+!public/jquery/jquery.js
+public/vschess/*
+!public/vschess/layout/
+!public/vschess/sound/
+!public/vschess/style/
+!public/vschess/global.css
+!public/vschess/vschess.min.js

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	listen = flag.String("listen", ":25566", "listen address")
+	listen = flag.String("listen", ":8080", "listen address")
 	dir    = flag.String("dir", "./public", "directory to serve")
 )
 

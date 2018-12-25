@@ -1,7 +1,6 @@
 package chess
 
 import (
-	"fmt"
 	"unicode"
 )
 
@@ -22,6 +21,15 @@ func (c *Chess) Move(step [4]int) (state [2]Piece) {
 	} else {
 		c.Next = 'b'
 	}
+	if state[0].Type == 'k' {
+		c.BlackKingIndex = state[1].Index
+	} else if state[0].Type == 'K' {
+		c.RedKingIndex = state[1].Index
+	} else if state[1].Type == 'k' {
+		c.BlackKingIndex = -1
+	} else if state[1].Type == 'K' {
+		c.RedKingIndex = -1
+	}
 	return
 }
 
@@ -36,6 +44,15 @@ func (c *Chess) UnMove(state [2]Piece) {
 		c.Next = 'w'
 	} else {
 		c.Next = 'b'
+	}
+	if state[0].Type == 'k' {
+		c.BlackKingIndex = state[0].Index
+	} else if state[0].Type == 'K' {
+		c.RedKingIndex = state[0].Index
+	} else if state[1].Type == 'k' {
+		c.BlackKingIndex = state[1].Index
+	} else if state[1].Type == 'K' {
+		c.RedKingIndex = state[1].Index
 	}
 }
 
@@ -57,15 +74,26 @@ func (c *Chess) GetNextSteps() (steps [][4]int) {
 		if (c.Next == 'b' && unicode.IsUpper(rune(p.Type))) || (c.Next != 'b' && unicode.IsLower(rune(p.Type))) {
 			continue
 		}
-		if unicode.IsUpper(rune(p.Type)) {
-			fmt.Println(string(p.Type))
-		}
 		switch unicode.ToLower(rune(p.Type)) {
 		case 'k': // 将、帅
 			for _, r := range KMoveRules {
 				if ((p.NumberIndex+r[0] >= 0 && p.NumberIndex+r[0] <= 2) || (p.NumberIndex+r[0] >= 7 && p.NumberIndex+r[0] <= 9)) &&
 					(p.AlphaIndex+r[1] >= 'd'-'a' && p.AlphaIndex+r[1] <= 'f'-'a') {
 					checkStepAndSet(c, &steps, &p, p.NumberIndex+r[0], p.AlphaIndex+r[1])
+				}
+			}
+			for i := p.NumberIndex - 1; i >= 0; i-- {
+				if e, ok := c.Board[i*9+p.AlphaIndex]; ok && unicode.ToLower(rune(e.Type)) == 'k' {
+					checkStepAndSet(c, &steps, &p, i, p.AlphaIndex)
+				} else if ok && unicode.ToLower(rune(e.Type)) != 'k' {
+					break
+				}
+			}
+			for i := p.NumberIndex + 1; i <= 9; i++ {
+				if e, ok := c.Board[i*9+p.AlphaIndex]; ok && unicode.ToLower(rune(e.Type)) == 'k' {
+					checkStepAndSet(c, &steps, &p, i, p.AlphaIndex)
+				} else if ok && unicode.ToLower(rune(e.Type)) != 'k' {
+					break
 				}
 			}
 		case 'a': // 士、仕

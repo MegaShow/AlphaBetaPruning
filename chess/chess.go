@@ -8,9 +8,10 @@ import (
 
 // Chess 棋盘信息
 type Chess struct {
-	Board map[int]Piece
-	Next  byte
-	Size  int
+	Board          map[int]Piece
+	Next           byte
+	BlackKingIndex int
+	RedKingIndex   int
 }
 
 type Piece struct {
@@ -26,7 +27,6 @@ func NewChess(fen string, steps []string) *Chess {
 	chess := Chess{
 		Board: make(map[int]Piece),
 		Next:  byte(strArgs[1][0]),
-		Size:  0,
 	}
 	for i := 0; i < len(lines); i++ {
 		var index int
@@ -39,6 +39,11 @@ func NewChess(fen string, steps []string) *Chess {
 					Index:       i*9 + index,
 					AlphaIndex:  index,
 					NumberIndex: i,
+				}
+				if v == 'k' {
+					chess.BlackKingIndex = i*9 + index
+				} else if v == 'K' {
+					chess.RedKingIndex = i*9 + index
 				}
 				index++
 			}
@@ -69,13 +74,18 @@ func (c *Chess) Print() {
 }
 
 func (c *Chess) IsWin(player byte) bool {
-	return false
+	if player == 'b' {
+		return c.RedKingIndex == -1
+	} else {
+		return c.BlackKingIndex == -1
+	}
 }
 
 func (c *Chess) Evaluate(steps [][4]int) int {
 	var redValue, blackValue int
 	var redBasicValue, blackBasicValue int
 	var redPositionValue, blackPositionValue int
+	//var redMobilityValue, blackMobilityValue int
 	for _, p := range c.Board {
 		positions, ok := PositionValueTable[byte(unicode.ToLower(rune(p.Type)))]
 		if p.Type >= 'a' && p.Type <= 'z' {
@@ -90,14 +100,17 @@ func (c *Chess) Evaluate(steps [][4]int) int {
 			}
 		}
 	}
+	//for _, s := range steps {
+	//	p := c.Board[s[0]*9+s[1]]
+	//	if p.Type >= 'a' && p.Type <= 'z' {
+	//		blackMobilityValue += MobilityValueTable[p.Type]
+	//	} else {
+	//		redMobilityValue += MobilityValueTable[p.Type]
+	//	}
+	//}
 	redValue = redBasicValue + redPositionValue*8
 	blackValue = blackBasicValue + blackPositionValue*8
-	// fmt.Println(redValue, blackValue, redBasicValue, redPositionValue, blackBasicValue, blackPositionValue)
-	//if c.Next == 'b' {
 	return blackValue - redValue
-	//} else {
-	//	return redValue - blackValue
-	//}
 }
 
 // 子力价值
