@@ -79,7 +79,26 @@ func (c *Chess) GetNextSteps() (steps [][4]int) {
 			for _, r := range KMoveRules {
 				if ((p.NumberIndex+r[0] >= 0 && p.NumberIndex+r[0] <= 2) || (p.NumberIndex+r[0] >= 7 && p.NumberIndex+r[0] <= 9)) &&
 					(p.AlphaIndex+r[1] >= 'd'-'a' && p.AlphaIndex+r[1] <= 'f'-'a') {
-					checkStepAndSet(c, &steps, &p, p.NumberIndex+r[0], p.AlphaIndex+r[1])
+					canMove := true
+					if r[1] != 0 {
+						for i := p.NumberIndex - 1; i >= 0; i-- {
+							if e, ok := c.Board[i*9+p.AlphaIndex+r[1]]; ok && unicode.ToLower(rune(e.Type)) == 'k' {
+								canMove = false
+							} else if ok && unicode.ToLower(rune(e.Type)) != 'k' {
+								break
+							}
+						}
+						for i := p.NumberIndex + 1; i <= 9; i++ {
+							if e, ok := c.Board[i*9+p.AlphaIndex+r[1]]; ok && unicode.ToLower(rune(e.Type)) == 'k' {
+								canMove = false
+							} else if ok && unicode.ToLower(rune(e.Type)) != 'k' {
+								break
+							}
+						}
+					}
+					if canMove {
+						checkStepAndSet(c, &steps, &p, p.NumberIndex+r[0], p.AlphaIndex+r[1])
+					}
 				}
 			}
 			for i := p.NumberIndex - 1; i >= 0; i-- {
